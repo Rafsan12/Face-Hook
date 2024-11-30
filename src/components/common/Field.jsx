@@ -12,7 +12,7 @@ export default function Field({ label, children, htmlfor: htmlFor, error }) {
       )}
       {children}
       {!!error && (
-        <div role="alert" className="text-red-700">
+        <div role="alert" className="text-blue-300">
           {error.message}
         </div>
       )}
