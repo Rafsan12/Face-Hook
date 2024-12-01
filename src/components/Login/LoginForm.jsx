@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/Useauth";
@@ -9,14 +10,34 @@ export default function LoginForm() {
     register,
     handleSubmit,
     formState: { errors },
+    setError,
   } = useForm();
   const navigate = useNavigate();
 
-  const submitForm = (formData) => {
-    console.log(formData);
-    const user = { ...formData };
-    setAuth({ user });
-    navigate("/");
+  const submitForm = async (formData) => {
+    // console.log(formData);
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_SERVER_BASE_URL}/auth/login`,
+        formData
+      );
+      if (response.status === 200) {
+        const { user, token } = response.data;
+        if (token) {
+          const authToken = token.token;
+          const refreshTokens = token.refreshToken;
+          console.log(`Login in time ${authToken}`);
+          setAuth({ user, refreshTokens, authToken });
+          navigate("/");
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      setError("root.random", {
+        type: "random",
+        message: `User With email ${formData.email} is not found`,
+      });
+    }
   };
   return (
     <form
@@ -42,12 +63,12 @@ export default function LoginForm() {
               value: 8,
               message: "your password must be 8 characters",
             },
-            pattern: {
-              value:
-                /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-              message:
-                "Password must include at least one uppercase letter, one lowercase letter, one number, and one special character",
-            },
+            // pattern: {
+            //   value:
+            //     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+            //   message:
+            //     "Password must include at least one uppercase letter, one lowercase letter, one number, and one special character",
+            // },
           })}
           type="password"
           name="password"
@@ -57,6 +78,7 @@ export default function LoginForm() {
           }`}
         />
       </Field>
+      <p>{errors?.root?.random?.message}</p>
       <Field>
         <button
           className="auth-input bg-lwsGreen font-bold text-deepDark transition-all hover:opacity-90"
