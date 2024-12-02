@@ -3,6 +3,6 @@ import { AuthContext } from "../context";
 
 export const useAuth = () => {
   const { auth } = useContext(AuthContext);
-  useDebugValue(auth, (auth) => (auth?.user ? "user Login" : "User Logout"));
+  useDebugValue(auth, (auth) => (auth?.user ? "Logged In" : "Logged Out"));
   return useContext(AuthContext);
 };

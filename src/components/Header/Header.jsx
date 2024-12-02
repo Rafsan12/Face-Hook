@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import Home from "../../assets/icons/home.svg";
 
 import Notification from "../../assets/icons/notification.svg";
-import Avatars from "../../assets/images/avatars/avatar_1.png";
 import Logo from "../../assets/images/logo.svg";
 import { useAuth } from "../../hooks/Useauth";
 import Logout from "../Login/Logout";
@@ -33,11 +32,13 @@ export default function Header() {
 
             <Link to="/profile" className="flex-center !ml-8 gap-3">
               <span className="text-lg font-medium lg:text-xl">
-                {auth?.user?.firstName}
+                {auth?.user
+                  ? `${auth?.user?.firstName} ${auth?.user?.lastName}`
+                  : ""}
               </span>
               <img
                 className="max-h-[32px] max-w-[32px] lg:max-h-[44px] lg:max-w-[44px]"
-                src={Avatars}
+                src={auth?.user?.avatar}
                 alt=""
               />
             </Link>

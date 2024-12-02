@@ -7,7 +7,7 @@ const useAxios = () => {
   const { auth, setAuth } = useAuth();
 
   useEffect(() => {
-    // Request interceptor
+    // Add a request interceptor
     const requestIntercept = api.interceptors.request.use(
       (config) => {
         const authToken = auth?.authToken;
@@ -19,13 +19,15 @@ const useAxios = () => {
       (error) => Promise.reject(error)
     );
 
-    // Response interceptor
+    // Add a response interceptor
     const responseIntercept = api.interceptors.response.use(
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
 
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        // If the error status is 401 and there is no originalRequest._retry flag,
+        // it means the token has expired and we need to refresh it
+        if (error.response.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
 
           try {
@@ -34,24 +36,23 @@ const useAxios = () => {
               `${import.meta.env.VITE_SERVER_BASE_URL}/auth/refresh-token`,
               { refreshToken }
             );
-
             const { token } = response.data;
+
             console.log(`New Token: ${token}`);
             setAuth({ ...auth, authToken: token });
 
+            // Retry the original request with the new token
             originalRequest.headers.Authorization = `Bearer ${token}`;
             return axios(originalRequest);
           } catch (error) {
-            throw new error();
+            throw error;
           }
         }
 
         return Promise.reject(error);
       }
     );
-
     return () => {
-      // Cleanup interceptors
       api.interceptors.request.eject(requestIntercept);
       api.interceptors.response.eject(responseIntercept);
     };

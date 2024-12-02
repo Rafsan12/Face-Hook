@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useAuth } from "../../hooks/Useauth";
 
 export default function Home() {
@@ -6,6 +7,7 @@ export default function Home() {
   return (
     <>
       <h1>This is Home</h1>
+      <Link to="/profile">Go to Profile Page</Link>
     </>
   );
 }
