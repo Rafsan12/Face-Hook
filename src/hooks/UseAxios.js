@@ -25,9 +25,7 @@ const useAxios = () => {
       async (error) => {
         const originalRequest = error.config;
 
-        // If the error status is 401 and there is no originalRequest._retry flag,
-        // it means the token has expired and we need to refresh it
-        if (error.response.status === 401 && !originalRequest._retry) {
+        if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
 
           try {
@@ -39,24 +37,28 @@ const useAxios = () => {
             const { token } = response.data;
 
             console.log(`New Token: ${token}`);
-            setAuth({ ...auth, authToken: token });
+            setAuth((prevAuth) => ({ ...prevAuth, authToken: token }));
 
-            // Retry the original request with the new token
             originalRequest.headers.Authorization = `Bearer ${token}`;
             return axios(originalRequest);
-          } catch (error) {
-            throw error;
+          } catch (refreshError) {
+            console.error("Refresh token failed", refreshError);
+            setAuth(null); // Log the user out
+            return Promise.reject(refreshError);
           }
         }
 
         return Promise.reject(error);
       }
     );
+
+    // Clean up interceptors
     return () => {
+      console.log("Ejecting interceptors...");
       api.interceptors.request.eject(requestIntercept);
       api.interceptors.response.eject(responseIntercept);
     };
-  }, [auth.authToken]);
+  }, [auth]);
 
   return { api };
 };
